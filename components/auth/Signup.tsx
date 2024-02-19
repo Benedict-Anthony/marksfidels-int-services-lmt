@@ -11,12 +11,16 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { IoIosSend } from "react-icons/io";
 import Navigation from "./Navigation";
 import GoogleAuth from "./GoogleAuth";
+import Modal from "../shared/Modal";
+import { auth } from "@/lib/auth";
+import ProgressSpinner from "../shared/ProgressSpiner";
+import { useRouter } from "next/navigation";
 
 const schema = yup.object({
   username: yup.string().required("This field is required"),
@@ -34,20 +38,42 @@ type SignupForm = {
   password: string;
   confirmPassword: string;
 };
+const modalProps = {
+  title: "Account Created Successsfully",
+  subtitle: "Hi, Thank for creating an account with Markfidel",
+  bodyText:
+    "An email have been forward to you, please verify the email to activate your account",
+  extraText: "Please check your span folder if having any issues",
+};
 const Signup = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<SignupForm>({
     resolver: yupResolver(schema),
   });
 
+  const handleModal = () => {
+    setIsOpen(false);
+    router.push("sign-in");
+  };
+
   const onSubmit = async (data: SignupForm) => {
-    console.log(data);
+    try {
+      await auth("signup/", data);
+      reset();
+      setIsOpen(true);
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <Fragment>
+      <Modal isOpen={isOpen} onClose={handleModal} {...modalProps} />
       <form
         className="w-full px-2 pb-3 md:px-10"
         onSubmit={handleSubmit(onSubmit)}
@@ -99,14 +125,18 @@ const Signup = () => {
             </FormControl>
           </Box>
           <Box>
-            <Button
-              type="submit"
-              bg={"blue.400"}
-              textColor={"white"}
-              rightIcon={<IoIosSend />}
-            >
-              Submit
-            </Button>
+            {!isSubmitting ? (
+              <Button
+                type="submit"
+                bg={"blue.400"}
+                textColor={"white"}
+                rightIcon={<IoIosSend />}
+              >
+                Submit
+              </Button>
+            ) : (
+              <ProgressSpinner />
+            )}
           </Box>
         </Stack>
         <GoogleAuth />

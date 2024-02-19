@@ -6,7 +6,8 @@ import Header from "@/components/Headers/Header";
 import PrimeProvider from "@/providers/PrimeProvider";
 import ReduxProvider from "@/providers/ReduxProvider";
 import QueryProvider from "@/providers/QueryProvider";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,16 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ReduxProvider>
-          <QueryProvider>
+        <QueryProvider>
+          <ReduxProvider>
             <ChakraProviders>
               <PrimeProvider>
+                <ToastContainer position="top-center" limit={1} />
                 <Header />
                 {children}
               </PrimeProvider>
             </ChakraProviders>
-          </QueryProvider>
-        </ReduxProvider>
+          </ReduxProvider>
+        </QueryProvider>
       </body>
     </html>
   );

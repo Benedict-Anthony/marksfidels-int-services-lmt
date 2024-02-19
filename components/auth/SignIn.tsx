@@ -2,7 +2,6 @@
 import {
   Box,
   FormControl,
-  FormHelperText,
   FormLabel,
   Input,
   FormErrorMessage,
@@ -11,17 +10,24 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { yupResolver } from "@hookform/resolvers/yup";
-import React, { Fragment } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { IoIosSend } from "react-icons/io";
 import Navigation from "./Navigation";
 import GoogleAuth from "./GoogleAuth";
+import ProgressSpinner from "../shared/ProgressSpiner";
+import { toast } from "react-toastify";
+import { auth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 type SigninForm = {
   email: string;
   password: string;
 };
 const SignIn = () => {
+  const [message, setMessage] = useState("");
+  const router = useRouter();
   const schema = yup.object({
     email: yup
       .string()
@@ -33,14 +39,30 @@ const SignIn = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<SigninForm>({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: SigninForm) => {
-    console.log(data);
+  const onSubmit = async (data: SigninForm) => {
+    try {
+      const response = await auth("login/", data);
+      console.log(response.data.data);
+      toast("Login Successsful");
+      router.replace("/dashboard");
+    } catch (error) {
+      setMessage("Invalid email or password");
+      setError("email", {
+        message: "",
+      });
+
+      setTimeout(() => {
+        setMessage("");
+      }, 5000);
+    }
   };
+
   return (
     <Box as={"section"} w={"100%"}>
       <form
@@ -54,13 +76,10 @@ const SignIn = () => {
 
           <Box>
             <FormControl isInvalid={errors.email as unknown as boolean}>
+              {message && <FormErrorMessage mb={4}>{message}</FormErrorMessage>}
               <FormLabel textColor={"blue.400"}>Email</FormLabel>
 
-              <Input
-                type="email"
-                {...register("email")}
-                textColor={"blue.400"}
-              />
+              <Input type="email" {...register("email")} />
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
           </Box>
@@ -72,16 +91,26 @@ const SignIn = () => {
               <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
             </FormControl>
           </Box>
-
+          <Link
+            href={"/auth/forgotten-password"}
+            className=" block text-left mt-3 border-0 text-primary text-sm"
+          >
+            Forgotten password?
+          </Link>
           <Box>
-            <Button
-              type="submit"
-              bg={"blue.400"}
-              textColor={"white"}
-              rightIcon={<IoIosSend />}
-            >
-              Login
-            </Button>
+            {!isSubmitting ? (
+              <Button
+                type="submit"
+                bg={"blue.400"}
+                textColor={"white"}
+                rightIcon={<IoIosSend />}
+                disabled={isSubmitting}
+              >
+                Login
+              </Button>
+            ) : (
+              <ProgressSpinner />
+            )}
           </Box>
         </Stack>
         <GoogleAuth />

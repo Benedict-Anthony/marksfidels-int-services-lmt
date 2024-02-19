@@ -29,13 +29,21 @@ export function Loader() {
         as={motion.div}
         animation={animation}
         // not work: transition={{ ... }}
-        padding="2"
+        padding="5"
         // @ts-ignore - "Does not exist" Type Error against Motion
         bgGradient="linear(to-l, #7928CA, #FF0080)"
         width="12"
         height="12"
         display="flex"
-      />
+        alignItems={"center"}
+        justifyContent={"center"}
+        flexDirection={"column"}
+        fontSize={5}
+        textColor={"white"}
+        textAlign={"center"}
+      >
+        Marksfidel
+      </Box>
     </Container>
   );
 }
@@ -48,7 +56,7 @@ const ChakraBox = chakra(motion.div, {
     isValidMotionProp(prop) || shouldForwardProp(prop),
 });
 
-export default function App() {
+export default function Spinner() {
   return (
     <Container
       h="100vh"
